@@ -1,28 +1,116 @@
 //jshint esversion:6
 
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
+const mongoose = require('mongoose');
 
-// Connection URL
-const url = 'mongodb://localhost:27017';
+mongoose.connect("mongodb://localhost:27017/shubhamDB",{ useUnifiedTopology: true });
 
-// Database Name
-const dbName = 'myproject';
+//creating the schema
 
-// Create a new MongoClient
-const client = new MongoClient(url,{ useUnifiedTopology: true });
-
-// Use connect method to connect to the Server
-client.connect(function(err) {
-  assert.equal(null, err);
-  console.log("Connected successfully to server");
-
-  const db = client.db(dbName);
-
-   findDocuments(db, function() {
-      client.close();
-    });
+const fruitSchema=new mongoose.Schema({
+    name:{
+        type:String,
+        required:[true, "Please check the data you have entered"]
+        
+    },
+    
+    //validation code--->
+    
+    score:{
+        type:Number,
+        min:1,
+        max:10
+    },
+    reviews:String
+    
 });
+
+
+//creating the collection along with the schema
+
+const Fruits = mongoose.model("Fruit",fruitSchema);
+
+//creating document from the model
+
+const fruit=new Fruits({
+    score:10,
+    reviews:"Used for muscle building"
+    
+});
+
+fruit.save();
+
+const peopleSchema= new mongoose.Schema({
+    name:String,
+    age:Number,
+    favorite_fruit:fruitSchema
+    
+});
+
+const People=mongoose.model("people_datas",peopleSchema);
+
+
+
+const Pineapple=new Fruits({
+    name:"Pineapple",
+    score:9,
+    reviews:"Best Fruiit Of Shubham"
+});
+
+Pineapple.save();
+
+const p1=new People({
+    name:"Aishwarya",
+    age:21,
+    favorite_fruit:Pineapple
+});
+
+p1.save();
+
+
+
+Fruits.find(function(err,fruit){
+    if(err){
+        console.log(err);
+    }
+    else{
+        //console.log(fruit);  
+        mongoose.connection.close();
+        fruit.forEach(function(fruit){
+                console.log(fruit.name);
+        });
+    }
+})
+
+
+
+/*fruit.updateOne({_id: "5eb038be9d6780235c5bedba"},{name: "Pomegranate"}, function(err){
+    if(err){
+        console.log(err);
+    }
+    else{
+        console.log("Successfully Updated The Documents");
+    }
+});*/
+
+/*Fruits.deleteOne({name: "Pomegranate"},function(err){
+    if(err){
+        console.log(err);
+    }
+    else{
+        console.log("Successfully Deleted the required data");
+    }
+});*/
+
+People.deleteMany({name:"SHUBHAM"},function(err){
+    if(err){
+        console.log(err);
+    }
+    else{
+        console.log("Successfully Deleted the data");
+    }
+});
+
+
 
 const insertDocuments = function(db, callback) {
   // Get the documents collection
